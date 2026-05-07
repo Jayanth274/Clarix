@@ -45,7 +45,7 @@ export default function ComparisonPage() {
     setComparison(null);
 
     try {
-      const response = await axios.post('http://localhost:5000/api/compare', { url1, url2, goal });
+      const response = await axios.post('https://clarix-backend-production.up.railway.app/api/compare', { url1, url2, goal });
       setComparison(response.data);
     } catch (err) {
       console.error('Comparison failed:', err);
