@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.env
+*.log
+debug_*.txt
+crawler_log.txt
+crawler_result.json
+debug_screenshot.png
+archive/
+.DS_Store
