@@ -59,7 +59,7 @@ export default function AnalyzerPage() {
     setResult(null);
 
     try {
-      const response = await axios.post('https://clarix-backend-production.up.railway.app/api/analyze', { url, goal });
+      const response = await axios.post(https://clarix-2cd7.onrender.com/api/analyze', { url, goal });
       const data = response.data;
       if (data.screenshotBase64) {
         data.screenshotBase64 = data.screenshotBase64.replace(/[\r\n\s]/g, '');
@@ -80,7 +80,7 @@ export default function AnalyzerPage() {
     setChatMessages(prev => [...prev, { role: 'user', content: userMessage }]);
     setChatLoading(true);
     try {
-      const response = await axios.post('https://clarix-backend-production.up.railway.app/api/chat', {
+      const response = await axios.post(https://clarix-2cd7.onrender.com/api/chat', {
         message: userMessage,
         scanResult: result,
         screenshotBase64: result?.screenshotBase64 || null
