@@ -8,7 +8,7 @@ import { Star, Send, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 
-const API_URL = 'https://clarix-backend-production.up.railway.app';
+const API_URL = const API_URL = 'https://clarix-2cd7.onrender.com';;
 
 export default function FeedbackForm({ sessionData, onClose, onSubmit }) {
     const [ratings, setRatings] = useState({
