@@ -75,7 +75,7 @@ export function NavigationProvider({ children }) {
 
         let newSessionId = `session_${Date.now()}`;
         try {
-            const response = await axios.post('https://clarix-backend-production.up.railway.app/api/session/start', { goal, uiType, optimalPath });
+            const response = await axios.post('https://clarix-2cd7.onrender.com/api/session/start'/api/session/start', { goal, uiType, optimalPath });
             newSessionId = response.data.sessionId;
             setCurrentSessionId(newSessionId);
             setTrackingState(prev => ({...prev, sessionId: newSessionId}));
@@ -115,7 +115,7 @@ export function NavigationProvider({ children }) {
 
         // POST final metrics to backend
         try {
-            await axios.post('https://clarix-backend-production.up.railway.app/api/session/update', {
+            await axios.post('https://clarix-2cd7.onrender.com/api/session/start'/api/session/update', {
                 sessionId,
                 metrics: sessionData.metrics
             });
@@ -260,7 +260,7 @@ export function NavigationProvider({ children }) {
 
         // POST metrics to backend
         if (currentSessionId) {
-            axios.post('https://clarix-backend-production.up.railway.app/api/session/update', {
+            axios.post('https://clarix-2cd7.onrender.com/api/session/update', {
                 sessionId: currentSessionId,
                 metrics: { 
                     actualPath: newState.actualPath, 
