@@ -1,0 +1,8 @@
+Cognitive waste detection.
+
+Website 1: https://books.toscrape.com
+Website 2: https://quotes.toscrape.com
+Goal: find something interesting to read
+
+
+https://clarix-mocha-two.vercel.app

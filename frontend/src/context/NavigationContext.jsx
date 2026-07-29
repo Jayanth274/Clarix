@@ -7,7 +7,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../config/api';
 import { initializeTrackingState, recordStep, detectBacktrack, countHesitations, calculateRepeatVisits, countConsecutiveBacktracks } from '../core/tracker.js';
 import { getOptimalPath, isGoalReached, validateGoal } from '../core/goalEngine.js';
 import { analyzePath } from '../core/pathAnalyzer.js';
@@ -75,7 +75,7 @@ export function NavigationProvider({ children }) {
 
         let newSessionId = `session_${Date.now()}`;
         try {
-            const response = await axios.post('https://clarix-backend-production.up.railway.app/api/session/start', { goal, uiType, optimalPath });
+            const response = await api.post('/api/session/start', { goal, uiType, optimalPath });
             newSessionId = response.data.sessionId;
             setCurrentSessionId(newSessionId);
             setTrackingState(prev => ({...prev, sessionId: newSessionId}));
@@ -115,7 +115,7 @@ export function NavigationProvider({ children }) {
 
         // POST final metrics to backend
         try {
-            await axios.post('https://clarix-backend-production.up.railway.app/api/session/update', {
+            await api.post('/api/session/update', {
                 sessionId,
                 metrics: sessionData.metrics
             });
@@ -260,7 +260,7 @@ export function NavigationProvider({ children }) {
 
         // POST metrics to backend
         if (currentSessionId) {
-            axios.post('https://clarix-backend-production.up.railway.app/api/session/update', {
+            api.post('/api/session/update', {
                 sessionId: currentSessionId,
                 metrics: { 
                     actualPath: newState.actualPath, 

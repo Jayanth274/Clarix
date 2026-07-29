@@ -6,9 +6,7 @@
 import React, { useState } from 'react';
 import { Star, Send, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import axios from 'axios';
-
-const API_URL = 'https://clarix-backend-production.up.railway.app';
+import api from '../config/api';
 
 export default function FeedbackForm({ sessionData, onClose, onSubmit }) {
     const [ratings, setRatings] = useState({
@@ -54,7 +52,7 @@ export default function FeedbackForm({ sessionData, onClose, onSubmit }) {
         };
 
         try {
-            await axios.post(`${API_URL}/api/feedback`, feedbackData);
+            await api.post('/api/feedback', feedbackData);
             setSubmitted(true);
             setTimeout(() => {
                 if (onSubmit) onSubmit(feedbackData);

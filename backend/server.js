@@ -230,7 +230,7 @@ RULES:
       headers: {
         'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'http://localhost:3000',
+        'HTTP-Referer': process.env.FRONTEND_URL || 'https://clarix-2cd7.onrender.com',
         'X-Title': 'Cognitive Waste Detection Engine'
       },
       body: JSON.stringify({
@@ -267,7 +267,7 @@ Answer only YES or NO. Nothing else.`;
           headers: {
             'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
             'Content-Type': 'application/json',
-            'HTTP-Referer': 'http://localhost:3000',
+            'HTTP-Referer': process.env.FRONTEND_URL || 'https://clarix-2cd7.onrender.com',
             'X-Title': 'Cognitive Waste Detection Engine'
           },
           body: JSON.stringify({
@@ -301,7 +301,7 @@ Return ONLY the JSON array. No markdown. No explanation.`;
               headers: {
                 'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
                 'Content-Type': 'application/json',
-                'HTTP-Referer': 'http://localhost:3000',
+                'HTTP-Referer': process.env.FRONTEND_URL || 'https://clarix-2cd7.onrender.com',
                 'X-Title': 'Cognitive Waste Detection Engine'
               },
               body: JSON.stringify({
@@ -356,6 +356,15 @@ app.post('/api/compare', async (req, res) => {
     console.error('❌ Comparison error:', error);
     res.status(500).json({ error: 'Comparison failed or blocked by one of the websites' });
   }
+});
+
+/**
+ * 6. POST /api/feedback
+ */
+app.post('/api/feedback', (req, res) => {
+  const feedbackData = req.body;
+  console.log('[Feedback] Received user feedback:', feedbackData);
+  res.json({ success: true, message: 'Feedback received' });
 });
 
 // Start server

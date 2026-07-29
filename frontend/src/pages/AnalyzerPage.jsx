@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Globe, Target, Search, Loader2, AlertCircle, CheckCircle, Brain, Info, MessageCircle, Send, X, ChevronDown } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
-import axios from 'axios';
+import api from '../config/api';
 import ScoreGauge from '../components/ScoreGauge';
 
 import FullScreenAudit from '../components/FullScreenAudit';
@@ -59,7 +59,7 @@ export default function AnalyzerPage() {
     setResult(null);
 
     try {
-      const response = await axios.post('https://clarix-backend-production.up.railway.app/api/analyze', { url, goal });
+      const response = await api.post('/api/analyze', { url, goal });
       const data = response.data;
       if (data.screenshotBase64) {
         data.screenshotBase64 = data.screenshotBase64.replace(/[\r\n\s]/g, '');
@@ -80,7 +80,7 @@ export default function AnalyzerPage() {
     setChatMessages(prev => [...prev, { role: 'user', content: userMessage }]);
     setChatLoading(true);
     try {
-      const response = await axios.post('https://clarix-backend-production.up.railway.app/api/chat', {
+      const response = await api.post('/api/chat', {
         message: userMessage,
         scanResult: result,
         screenshotBase64: result?.screenshotBase64 || null

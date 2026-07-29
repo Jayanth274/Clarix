@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Globe, Target, Loader2, AlertCircle, Brain, BarChart2, ShieldCheck, TrendingDown } from 'lucide-react';
-import axios from 'axios';
+import api from '../config/api';
 import ScoreGauge from '../components/ScoreGauge';
 
 
@@ -45,7 +45,7 @@ export default function ComparisonPage() {
     setComparison(null);
 
     try {
-      const response = await axios.post('https://clarix-backend-production.up.railway.app/api/compare', { url1, url2, goal });
+      const response = await api.post('/api/compare', { url1, url2, goal });
       setComparison(response.data);
     } catch (err) {
       console.error('Comparison failed:', err);
