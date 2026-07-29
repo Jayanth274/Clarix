@@ -158,100 +158,76 @@ app.post('/api/chat', async (req, res) => {
   const { message, scanResult, screenshotBase64 } = req.body;
   if (!message || !scanResult) return res.status(400).json({ error: 'message and scanResult are required' });
 
-  const systemPrompt = `You are an expert UX auditor and cognitive load specialist embedded inside the Cognitive Waste Detection Engine. You help both developers and non-technical users (bloggers, small business owners) reduce cognitive waste on their websites.
+  const systemPrompt = `You are a UX auditor embedded in the Cognitive Waste Detection Engine. Help developers and non-technical users reduce cognitive waste.
 
-The user has just scanned a website. Here is the full scan data:
+Scan data:
 - URL: ${scanResult.url}
 - Goal: ${scanResult.goal}
-- Cognitive Waste Score: ${scanResult.cognitiveScore}/100 (higher = more waste = worse)
-- Grade: ${scanResult.gradeLabel}
-- Navigation Waste: ${scanResult.factors?.navigationWaste}/20
-- Visual Waste: ${scanResult.factors?.visualWaste}/20
-- Content Waste: ${scanResult.factors?.contentWaste}/20
-- Interaction Waste: ${scanResult.factors?.interactionWaste}/20
-- Goal Waste: ${scanResult.factors?.goalWaste}/20
-- Detected Issues: ${JSON.stringify(scanResult.issues)}
-- Metrics: ${JSON.stringify(scanResult.metrics)}
+- Score: ${scanResult.cognitiveScore}/100 (Grade: ${scanResult.gradeLabel})
+- Factors: Nav=${scanResult.factors?.navigationWaste || 0}, Visual=${scanResult.factors?.visualWaste || 0}, Content=${scanResult.factors?.contentWaste || 0}, Interaction=${scanResult.factors?.interactionWaste || 0}, Goal=${scanResult.factors?.goalWaste || 0}
+- Issues: ${JSON.stringify(scanResult.issues)}
 
-SCORING FORMULA (use this for exact score projections):
-- Each category is scored 0-20. Total = sum of all 5 categories = max 100.
-- Navigation Waste: 0-20 based on menu item count and nav depth
-- Visual Waste: 0-20 based on link density, button count, scroll ratio
-- Content Waste: 0-20 based on readability grade, missing H1, alt text, meta description
-- Interaction Waste: 0-20 based on missing search, mobile responsiveness, CTA presence, small touch targets, contrast
-- Goal Waste: 0-20 based on whether goal keywords appear in navigation
-- CRITICAL: Lower score = LESS waste = BETTER. When a fix is applied, the factor score DECREASES not increases. For example if Interaction Waste is currently 13/20 and adding a search bar removes the "No Search Bar" penalty of 8 points, Interaction Waste becomes 5/20. The total CWS score DECREASES by 8. Never project a higher score as a positive outcome. Always verify: projected score must be LOWER than current score of ${scanResult.cognitiveScore}.
-
-AUDIENCE RULES:
-- Always give TWO implementation paths for every fix:
-  1. 💻 For Developers: exact code snippet or technical instruction (HTML/CSS/React/WordPress PHP)
-  2. 🖱️ For Non-Technical Users: step-by-step no-code instruction (WordPress dashboard, Wix editor, Blogger settings)
-- Detect platform from URL if possible (e.g. wordpress.com, wix.com, blogspot.com) and prioritize that platform's instructions
-- If platform is unknown, give generic HTML + WordPress instructions
-
-RESPONSE RULES:
-1. Always be specific to THEIR scan data — never give generic advice
-2. When suggesting a fix, calculate exactly how many points it saves using the scoring formula above
-3. Prioritize fixes by impact — highest score reduction first
-4. For each fix, state: what to fix → where exactly on the page → how to implement it (both paths) → points saved
-5. If the user asks a visual question, confirm that the visual annotation panel has been activated showing their site screenshot with colored overlay boxes marking exactly where changes should be made. Say "I've highlighted the areas on your site screenshot below" and then give the placement details.
-6. FORMAT RULES — strictly follow these:
-   - Never use nested bullet points or sub-lists
-   - Never use more than 2 levels of indentation
-   - Use bold headers like **Fix 1:** instead of markdown headers
-   - Keep each point to 1-2 lines maximum
-   - Separate sections with a single blank line only
-   - Code blocks are allowed but keep them short (max 8 lines)
-   - No bullet points inside bullet points ever
-7. End every response with the exact projected new score: "Fixing this brings your score from ${scanResult.cognitiveScore} to approximately X/100 (Grade: Y)"
-8. Never suggest fixes that aren't supported by the actual scan data
-
-RESPONSE FORMAT — follow this exactly for every fix:
-
-**Fix N: [Fix Name]** — saves X pts ([Category]: current→new)
-
-Where: [1 sentence describing exact page location]
-
-💻 For Developers:
-[1-2 sentence explanation + code block if needed, max 10 lines of code]
-
-🖱️ For Non-Technical Users:
-[3-5 clear steps, no sub-bullets, each step on its own line starting with a number]
-
----
-
-RULES:
-- Always include a code block for developers
-- Always include numbered steps for non-technical users  
-- Never use bullet points inside bullet points
-- One blank line between sections, no more
-- Always end the full response with: "Fixing this brings your score from ${scanResult.cognitiveScore} to approximately X/100 (Grade: Y)."
-- Minimum 3 sentences of explanation per fix so users actually understand why`;
+Rules:
+1. Provide concise fixes specific to scan data.
+2. Provide two implementation paths for each fix: 💻 For Developers (code/tech instructions) and 🖱️ For Non-Technical Users (dashboard/no-code steps).
+3. End response with: "Fixing this brings your score from ${scanResult.cognitiveScore} to approximately X/100 (Grade: Y)."`;
 
   try {
     const messages = [{ role: 'user', content: message }];
 
 
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': process.env.FRONTEND_URL || 'https://clarix-2cd7.onrender.com',
-        'X-Title': 'Cognitive Waste Detection Engine'
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.0-flash-001',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          ...messages
-        ],
-        max_tokens: 2000
-      })
+    const modelName = process.env.OPENROUTER_MODEL || 'anthropic/claude-fable-5';
+    const apiKeyDetected = !!process.env.OPENROUTER_API_KEY;
+
+    console.log('[Chat Request] Received payload:', {
+      messageLength: message?.length,
+      url: scanResult?.url,
+      hasScreenshot: !!screenshotBase64
     });
+    console.log('[Chat OpenRouter] API Key Detected:', apiKeyDetected);
+    console.log('[Chat OpenRouter] Model used:', modelName);
+
+    const openRouterPayload = {
+      model: modelName,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        ...messages
+      ],
+      max_tokens: 100
+    };
+
+    console.log('[Chat OpenRouter] Sending request to OpenRouter...');
+
+    let response;
+    try {
+      response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': process.env.FRONTEND_URL || 'https://clarix-2cd7.onrender.com',
+          'X-Title': 'Cognitive Waste Detection Engine'
+        },
+        body: JSON.stringify(openRouterPayload)
+      });
+    } catch (fetchErr) {
+      console.error('[Chat OpenRouter] Fetch exception:', fetchErr);
+      throw fetchErr;
+    }
+
+    console.log('[Chat OpenRouter] Response HTTP status:', response.status);
 
     const data = await response.json();
-    const reply = data.choices?.[0]?.message?.content || 'Sorry, I could not generate a response.';
+    console.log('[Chat OpenRouter] Response Body:', JSON.stringify(data));
+
+    let reply = data.choices?.[0]?.message?.content;
+    if (!reply) {
+      console.warn('[Chat OpenRouter] Could not extract reply content from choices. Falling back to default message.');
+      console.warn('[Chat OpenRouter] Extracted data object was:', JSON.stringify(data));
+      reply = 'Sorry, I could not generate a response.';
+    } else {
+      console.log('[Chat OpenRouter] Successfully extracted AI response (length:', reply.length, 'chars)');
+    }
 
     // Check if message contains "visual" keyword
     const isVisualRequest = message.toLowerCase().includes('visual');
@@ -278,12 +254,13 @@ Answer only YES or NO. Nothing else.`;
             'X-Title': 'Cognitive Waste Detection Engine'
           },
           body: JSON.stringify({
-            model: 'google/gemini-2.0-flash-001',
+            model: modelName,
             messages: [{ role: 'user', content: contextCheckPrompt }],
             max_tokens: 10
           })
         });
 
+        console.log('[Chat OpenRouter Visual Check] Status:', contextResponse.status);
         const contextData = await contextResponse.json();
         const decision = (contextData.choices?.[0]?.message?.content || 'NO').trim().toUpperCase().slice(0, 3);
 
@@ -312,12 +289,13 @@ Return ONLY the JSON array. No markdown. No explanation.`;
                 'X-Title': 'Cognitive Waste Detection Engine'
               },
               body: JSON.stringify({
-                model: 'google/gemini-2.0-flash-001',
+                model: modelName,
                 messages: [{ role: 'user', content: zonePrompt }],
                 max_tokens: 400
               })
             });
 
+            console.log('[Chat OpenRouter Zone Prompt] Status:', zoneResponse.status);
             const zoneData = await zoneResponse.json();
             const raw = (zoneData.choices?.[0]?.message?.content || '[]').trim().replace(/```json|```/g, '').trim();
             try { annotations = JSON.parse(raw); } catch(e) { annotations = []; }
@@ -326,13 +304,13 @@ Return ONLY the JSON array. No markdown. No explanation.`;
           isOutOfContext = true;
         }
       } catch(e) {
-        console.warn('Visual audit failed:', e.message);
+        console.warn('[Chat OpenRouter Visual Audit Error]:', e);
       }
     }
 
     res.json({ reply, annotations, isOutOfContext });
   } catch (error) {
-    console.error('Chat error:', error);
+    console.error('[Chat Exception] Stack trace:', error.stack || error);
     res.status(500).json({ error: 'Chat failed' });
   }
 });
