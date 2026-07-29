@@ -185,8 +185,7 @@ Rules:
       url: scanResult?.url,
       hasScreenshot: !!screenshotBase64
     });
-    const maskedKey = apiKey ? `${apiKey.slice(0, 6)}...${apiKey.slice(-4)}` : 'NONE';
-    console.log('[TEMPORARY KEY DIAGNOSTIC] Render OPENROUTER_API_KEY masked:', maskedKey);
+    console.log('[Chat OpenRouter] API Key Detected:', apiKeyDetected);
     console.log('[Chat OpenRouter] Model used:', modelName);
 
     if (!apiKeyDetected) {
