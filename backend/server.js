@@ -274,6 +274,9 @@ Answer only YES or NO. Nothing else.`;
         console.log('[Chat OpenRouter Visual Check] Status:', contextResponse.status);
         const contextData = await contextResponse.json();
         const decision = (contextData.choices?.[0]?.message?.content || 'NO').trim().toUpperCase().slice(0, 3);
+        console.log('[Chat Visual Gate DEBUG] Raw model content:', JSON.stringify(contextData.choices?.[0]?.message?.content));
+        console.log('[Chat Visual Gate DEBUG] Parsed decision:', decision);
+        console.log('[Chat Visual Gate DEBUG] modelName used for gate call:', modelName);
 
         if (decision === 'YES') {
           if (hasRealTargets) {
@@ -315,6 +318,7 @@ Return ONLY the JSON array. No markdown. No explanation.`;
           isOutOfContext = true;
         }
       } catch(e) {
+        console.error('[Chat Visual Gate DEBUG] Exception caught:', e.message);
         console.warn('[Chat OpenRouter Visual Audit Error]:', e);
       }
     }
